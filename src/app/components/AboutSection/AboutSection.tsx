@@ -619,6 +619,16 @@ export default function AboutSection() {
       return;
     }
 
+    // On mobile: title must be immediately fully visible (no scrub)
+    const isMobile =
+      window.matchMedia("(max-width: 900px)").matches ||
+      window.matchMedia("(hover: none)").matches;
+
+    if (isMobile) {
+      gsap.set(titleLineRefs.current, { "--line-fill": "100%" });
+      return;
+    }
+
     const context = gsap.context(() => {
       const activeLines = titleLineRefs.current.filter((el): el is HTMLSpanElement => el !== null);
       gsap.set(activeLines, { "--line-fill": "0%" });
