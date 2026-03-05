@@ -82,7 +82,7 @@ export default function FloatingExploreButton() {
     let docked = false;
     let topMode = false;
     let lastScrollY = window.scrollY;
-    let settleTimeoutId: ReturnType<typeof setTimeout> | null = null;
+    let settleTimeoutId: number | null = null;
     const driftTo = gsap.quickTo(card, "y", { duration: 0.34, ease: "power2.out" });
     const tiltTo = gsap.quickTo(card, "rotation", { duration: 0.34, ease: "power2.out" });
 
