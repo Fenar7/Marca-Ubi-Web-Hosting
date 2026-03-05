@@ -254,11 +254,15 @@ html.custom-cursor-enabled *::after {
 
 /* ─── Mobile performance overrides ──────────────────────────────────────────
    On touch/small screens we skip GPU-intensive transforms in JS.
-   These CSS rules act as a safety net ensuring browser doesn't create
-   unnecessary composited layers when there is no animation to drive them.   */
-@media (max-width: 900px), (hover: none) {
+   These CSS rules reset compositor hints set by GSAP on desktop.        */
+@media (max-width: 900px) {
   * {
-    /* Reset compositor hints set by GSAP on desktop — frees GPU memory */
+    will-change: auto !important;
+  }
+}
+
+@media (hover: none) {
+  * {
     will-change: auto !important;
   }
 }
