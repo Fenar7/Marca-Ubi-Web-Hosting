@@ -252,3 +252,13 @@ html.custom-cursor-enabled *::after {
 @import "./components/ContactCtaSection/style";
 @import "./components/Footer/style";
 
+/* ─── Mobile performance overrides ──────────────────────────────────────────
+   On touch/small screens we skip GPU-intensive transforms in JS.
+   These CSS rules act as a safety net ensuring browser doesn't create
+   unnecessary composited layers when there is no animation to drive them.   */
+@media (max-width: 900px), (hover: none) {
+  * {
+    /* Reset compositor hints set by GSAP on desktop — frees GPU memory */
+    will-change: auto !important;
+  }
+}

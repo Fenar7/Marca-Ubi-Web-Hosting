@@ -14,17 +14,45 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
   const pathname = usePathname();
 
   useEffect(() => {
-    // Skip Lenis entirely in Sanity Studio — let the browser handle scroll
+    // Skip in Sanity Studio
     if (pathname?.startsWith("/studio")) return;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return;
-    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     gsap.registerPlugin(ScrollTrigger);
 
-    // Prevent GSAP from catching up missed frames — biggest single fix for scroll jank
+    // Prevent GSAP from catching up missed frames
     gsap.ticker.lagSmoothing(0);
+
+    // Mobile = touch device or narrow viewport. On mobile:
+    // - Skip Lenis (it fights iOS/Android native momentum scroll → jank)
+    // - Keep GSAP + ScrollTrigger driven by native scroll events
+    // - Reduce ticker to 60fps (enough for 60Hz mobile screens)
+    const isMobile =
+      window.matchMedia("(max-width: 900px)").matches ||
+      window.matchMedia("(hover: none)").matches;
+
+    if (isMobile) {
+      gsap.ticker.fps(60);
+
+      // Wire ScrollTrigger to native scroll
+      const onScroll = () => ScrollTrigger.update();
+      window.addEventListener("scroll", onScroll, { passive: true });
+
+      const handleLoaderComplete = () => {
+        ScrollTrigger.refresh();
+      };
+      window.addEventListener("initial-loader:complete", handleLoaderComplete);
+      requestAnimationFrame(() => ScrollTrigger.refresh());
+
+      return () => {
+        window.removeEventListener("scroll", onScroll);
+        window.removeEventListener("initial-loader:complete", handleLoaderComplete);
+      };
+    }
+
+    // Desktop — full Lenis smooth scroll
+    gsap.ticker.fps(120);
 
     const lenis = new Lenis({
       duration: 1.1,
@@ -34,7 +62,6 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       touchMultiplier: 1.2,
     });
 
-    // Official Lenis + GSAP ScrollTrigger integration pattern
     lenis.on("scroll", ScrollTrigger.update);
 
     const onTick = (time: number) => {
@@ -42,7 +69,6 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     };
 
     gsap.ticker.add(onTick);
-    gsap.ticker.fps(120);
 
     const handleLoaderComplete = () => {
       lenis.resize();
@@ -61,7 +87,7 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       lenis.off("scroll", ScrollTrigger.update);
       lenis.destroy();
     };
-  }, []);
+  }, [pathname]);
 
   return <>{children}</>;
 }

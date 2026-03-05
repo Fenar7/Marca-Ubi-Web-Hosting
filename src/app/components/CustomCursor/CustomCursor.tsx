@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { gsap } from "gsap";
 import styles from "./CustomCursor.module.scss";
@@ -13,25 +13,27 @@ export default function CustomCursor() {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const orbRef = useRef<HTMLSpanElement | null>(null);
   const pathname = usePathname();
+  // null = SSR / not yet checked; true = fine-pointer desktop; false = touch / mobile
+  const [supportsCursor, setSupportsCursor] = useState<boolean | null>(null);
+
+  // Detect pointer capability on the client only
+  useEffect(() => {
+    setSupportsCursor(
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches,
+    );
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
     const orb = orbRef.current;
 
-    if (!root || !orb) {
-      return;
-    }
+    if (!root || !orb) return;
 
-    // Sanity Studio gets the normal system cursor
-    if (pathname?.startsWith("/studio")) {
-      return;
-    }
+    // Skip on Sanity Studio
+    if (pathname?.startsWith("/studio")) return;
 
-    const supportsCursor = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-
-    if (!supportsCursor) {
-      return;
-    }
+    // Skip on touch / mobile devices
+    if (!supportsCursor) return;
 
     document.documentElement.classList.add("custom-cursor-enabled");
     document.body.classList.add("custom-cursor-enabled");
@@ -71,9 +73,7 @@ export default function CustomCursor() {
     const orbRotate = gsap.quickTo(orb, "rotate", { duration: 0.2, ease: "power2.out" });
 
     const reveal = () => {
-      if (visible) {
-        return;
-      }
+      if (visible) return;
       visible = true;
       gsap.to(root, { autoAlpha: 1, duration: 0.18, ease: "power2.out" });
       orbScale(1);
@@ -115,17 +115,12 @@ export default function CustomCursor() {
     };
 
     const activateLiquidCard = (card: HTMLElement, event?: PointerEvent) => {
-      if (activeLiquidCard === card && activeLiquidBlob) {
-        return;
-      }
+      if (activeLiquidCard === card && activeLiquidBlob) return;
 
       deactivateLiquidCard();
 
       const blob = card.querySelector<HTMLElement>(".step-card-liquid-blob");
-
-      if (!blob) {
-        return;
-      }
+      if (!blob) return;
 
       const bounds = card.getBoundingClientRect();
       const startX = event ? Math.max(0, Math.min(bounds.width, event.clientX - bounds.left)) : bounds.width * 0.5;
@@ -136,24 +131,12 @@ export default function CustomCursor() {
       activeLiquidCard.classList.add("is-cursor-liquid");
       root.classList.add(styles.liquidHover);
 
-      gsap.set(blob, {
-        autoAlpha: 0,
-        scale: 0.54,
-        x: startX,
-        y: startY,
-        force3D: true,
-      });
+      gsap.set(blob, { autoAlpha: 0, scale: 0.54, x: startX, y: startY, force3D: true });
 
       liquidXTo = gsap.quickTo(blob, "x", { duration: 0.24, ease: "power3.out" });
       liquidYTo = gsap.quickTo(blob, "y", { duration: 0.24, ease: "power3.out" });
 
-      gsap.to(blob, {
-        autoAlpha: 0.96,
-        scale: 1,
-        duration: 0.46,
-        ease: "expo.out",
-        overwrite: "auto",
-      });
+      gsap.to(blob, { autoAlpha: 0.96, scale: 1, duration: 0.46, ease: "expo.out", overwrite: "auto" });
 
       orbScale(0.82);
     };
@@ -182,21 +165,13 @@ export default function CustomCursor() {
 
       if (activeLiquidCard && liquidXTo && liquidYTo) {
         const bounds = activeLiquidCard.getBoundingClientRect();
-        const nextLocalX = Math.max(0, Math.min(bounds.width, nextX - bounds.left));
-        const nextLocalY = Math.max(0, Math.min(bounds.height, nextY - bounds.top));
-        liquidXTo(nextLocalX);
-        liquidYTo(nextLocalY);
+        liquidXTo(Math.max(0, Math.min(bounds.width, nextX - bounds.left)));
+        liquidYTo(Math.max(0, Math.min(bounds.height, nextY - bounds.top)));
       }
     };
 
-    const handlePointerDown = () => {
-      reveal();
-      orbScale(0.86);
-    };
-
-    const handlePointerUp = () => {
-      orbScale(1);
-    };
+    const handlePointerDown = () => { reveal(); orbScale(0.86); };
+    const handlePointerUp = () => { orbScale(1); };
 
     const handlePointerLeaveWindow = () => {
       visible = false;
@@ -207,43 +182,21 @@ export default function CustomCursor() {
 
     const handlePointerOver = (event: PointerEvent) => {
       const target = event.target;
-
-      if (!(target instanceof Element)) {
-        return;
-      }
-
-      if (target.closest(INTERACTIVE_SELECTOR)) {
-        orbScale(1.28);
-      }
-
+      if (!(target instanceof Element)) return;
+      if (target.closest(INTERACTIVE_SELECTOR)) orbScale(1.28);
       const liquidCard = target.closest<HTMLElement>(LIQUID_CARD_SELECTOR);
-
-      if (liquidCard) {
-        activateLiquidCard(liquidCard, event);
-      }
+      if (liquidCard) activateLiquidCard(liquidCard, event);
     };
 
     const handlePointerOut = (event: PointerEvent) => {
       const target = event.target;
-
-      if (!(target instanceof Element)) {
-        return;
-      }
-
-      if (target.closest(INTERACTIVE_SELECTOR)) {
-        orbScale(1);
-      }
-
+      if (!(target instanceof Element)) return;
+      if (target.closest(INTERACTIVE_SELECTOR)) orbScale(1);
       const fromLiquidCard = target.closest<HTMLElement>(LIQUID_CARD_SELECTOR);
-
       if (fromLiquidCard) {
         const related = event.relatedTarget;
-        const stillInsideCard = related instanceof Element && fromLiquidCard.contains(related);
-
-        if (!stillInsideCard) {
-          deactivateLiquidCard();
-          orbScale(1);
-        }
+        const stillInside = related instanceof Element && fromLiquidCard.contains(related);
+        if (!stillInside) { deactivateLiquidCard(); orbScale(1); }
       }
     };
 
@@ -268,10 +221,11 @@ export default function CustomCursor() {
       document.documentElement.classList.remove("custom-cursor-enabled");
       document.body.classList.remove("custom-cursor-enabled");
     };
-  }, [pathname]);
+  }, [pathname, supportsCursor]);
 
-  // No cursor element in Sanity Studio
+  // Don't render the dot on: studio, mobile/touch, or before hydration check
   if (pathname?.startsWith("/studio")) return null;
+  if (supportsCursor === false) return null;
 
   return (
     <div className={styles.cursorRoot} ref={rootRef} aria-hidden="true">

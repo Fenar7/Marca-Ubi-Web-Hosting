@@ -33,24 +33,30 @@ const ContactCtaSection = () => {
 
       const contactInfo = contactInfoRef.current;
 
+      const isMobile =
+        window.matchMedia("(max-width: 900px)").matches ||
+        window.matchMedia("(hover: none)").matches;
+
       // ─── Image: zoomed in → fits perfectly (like Hero parallax) ───────────
-      // Starts zoomed at 1.3x, when user reaches section it's at 1x — fully fit, clear.
-      gsap.fromTo(
-        bgImage,
-        { scale: 1.3, yPercent: -5 },
-        {
-          scale: 1,
-          yPercent: 5,
-          ease: "none",
-          force3D: true,
-          scrollTrigger: {
-            trigger: section,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
+      // Skip on mobile — scrub + scale is expensive on touch devices
+      if (!isMobile) {
+        gsap.fromTo(
+          bgImage,
+          { scale: 1.3, yPercent: -5 },
+          {
+            scale: 1,
+            yPercent: 5,
+            ease: "none",
+            force3D: true,
+            scrollTrigger: {
+              trigger: section,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: true,
+            },
           },
-        },
-      );
+        );
+      }
 
       // ─── Black bar: simple clean slide-in from above ──────────────────────
       gsap.fromTo(

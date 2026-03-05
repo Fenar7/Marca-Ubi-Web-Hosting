@@ -161,6 +161,17 @@ export default function AboutSection() {
       return;
     }
 
+    // On mobile: skip all scrub/blur-heavy GSAP animations entirely.
+    // Content is immediately visible — no compositor overhead.
+    const isMobile =
+      window.matchMedia("(max-width: 900px)").matches ||
+      window.matchMedia("(hover: none)").matches;
+
+    if (isMobile) {
+      setFinalValues();
+      return;
+    }
+
     const context = gsap.context(() => {
       if (aboutStar) {
         gsap.set(aboutStar, {

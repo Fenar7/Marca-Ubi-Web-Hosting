@@ -87,6 +87,16 @@ const OurValuesSection = () => {
         return;
       }
 
+      // On mobile: skip scrub/blur/parallax — all content visible immediately
+      const isMobile =
+        window.matchMedia("(max-width: 900px)").matches ||
+        window.matchMedia("(hover: none)").matches;
+
+      if (isMobile) {
+        setFinalValues();
+        return;
+      }
+
       // ─── Initial states ─────────────────────────────────────────────────────
       gsap.set(tagIcon, {
         autoAlpha: 0,

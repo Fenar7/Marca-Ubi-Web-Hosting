@@ -40,6 +40,10 @@ export default function Hero() {
       return;
     }
 
+    const isMobile =
+      window.matchMedia("(max-width: 900px)").matches ||
+      window.matchMedia("(hover: none)").matches;
+
     let hasPlayed = false;
     let frameId: number | null = null;
     let fallbackId: number | null = null;
@@ -50,12 +54,12 @@ export default function Hero() {
       gsap.set(lines, {
         autoAlpha: 0,
         yPercent: 118,
-        rotateX: -44,
+        rotateX: isMobile ? 0 : -44,
         transformOrigin: "50% 100%",
-        filter: "blur(10px)",
+        filter: isMobile ? "blur(0px)" : "blur(10px)",
       });
       gsap.set(divider, { autoAlpha: 0, scaleX: 0, transformOrigin: "left center" });
-      gsap.set(subtitle, { autoAlpha: 0, y: 26, filter: "blur(7px)" });
+      gsap.set(subtitle, { autoAlpha: 0, y: 26, filter: isMobile ? "blur(0px)" : "blur(7px)" });
       gsap.set(buttonWrap, { autoAlpha: 0, y: 28, scale: 0.96 });
     }, content);
 
@@ -153,6 +157,10 @@ export default function Hero() {
     }
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isMobile =
+      window.matchMedia("(max-width: 900px)").matches ||
+      window.matchMedia("(hover: none)").matches;
+
     const loaderElement = document.querySelector<HTMLElement>("[data-initial-loader]");
 
     let introPlayed = false;
@@ -160,66 +168,20 @@ export default function Hero() {
     let scrollFrameId: number | null = null;
     let startFrameId: number | null = null;
     let fallbackId: number | null = null;
-    const scrollLerp = reduceMotion ? 0.24 : 0.2;
-    const scrollRange = Math.max(window.innerHeight * 0.46, 260);
-    let targetProgress = Math.min(window.scrollY / scrollRange, 1);
-    let currentProgress = targetProgress;
-
-    const applyScrollMotion = (progress: number) => {
-      gsap.set(backgroundLayer, {
-        scale: 1 + progress * (reduceMotion ? 0.05 : 0.18),
-        y: progress * (reduceMotion ? 10 : 46),
-        force3D: true,
-      });
-      gsap.set(heroImage, {
-        xPercent: -50,
-        scale: 1 + progress * (reduceMotion ? 0.06 : 0.32),
-        y: progress * (reduceMotion ? 14 : 92),
-        rotationY: -progress * (reduceMotion ? 0.9 : 4.3),
-        rotationX: progress * (reduceMotion ? 0.38 : 1.95),
-        force3D: true,
-      });
-      gsap.set(overlay, { opacity: 1 - progress * (reduceMotion ? 0.05 : 0.28) });
-    };
-
-    const tickScrollMotion = () => {
-      scrollFrameId = null;
-      if (!introFinished) {
-        return;
-      }
-
-      currentProgress += (targetProgress - currentProgress) * scrollLerp;
-      if (Math.abs(targetProgress - currentProgress) < 0.0012) {
-        currentProgress = targetProgress;
-      }
-
-      applyScrollMotion(currentProgress);
-      if (currentProgress !== targetProgress) {
-        scrollFrameId = window.requestAnimationFrame(tickScrollMotion);
-      }
-    };
-
-    const queueScrollMotion = () => {
-      targetProgress = Math.min(window.scrollY / scrollRange, 1);
-      if (!introFinished || scrollFrameId !== null) {
-        return;
-      }
-      scrollFrameId = window.requestAnimationFrame(tickScrollMotion);
-    };
 
     const context = gsap.context(() => {
       gsap.set(heroSection, { perspective: 1200 });
       gsap.set(backgroundLayer, {
-        scale: reduceMotion ? 1.04 : 1.14,
-        y: reduceMotion ? -6 : -18,
+        scale: reduceMotion || isMobile ? 1.04 : 1.14,
+        y: reduceMotion || isMobile ? -6 : -18,
         transformOrigin: "50% 50%",
       });
       gsap.set(heroImage, {
         xPercent: -50,
-        scale: reduceMotion ? 1.06 : 1.22,
-        y: reduceMotion ? -8 : -24,
-        rotationX: reduceMotion ? 1.2 : 3.6,
-        rotationY: reduceMotion ? -0.8 : -2.6,
+        scale: reduceMotion || isMobile ? 1.06 : 1.22,
+        y: reduceMotion || isMobile ? -8 : -24,
+        rotationX: isMobile ? 0 : (reduceMotion ? 1.2 : 3.6),
+        rotationY: isMobile ? 0 : (reduceMotion ? -0.8 : -2.6),
         transformOrigin: "50% 50% -60px",
         filter: reduceMotion ? "brightness(1.03) saturate(1.02)" : "brightness(1.1) saturate(1.08)",
       });
@@ -230,8 +192,53 @@ export default function Hero() {
       paused: true,
       onComplete: () => {
         introFinished = true;
-        currentProgress = targetProgress;
-        applyScrollMotion(currentProgress);
+        if (!isMobile) {
+          // Only start parallax on desktop
+          const scrollLerp = reduceMotion ? 0.24 : 0.2;
+          const scrollRange = Math.max(window.innerHeight * 0.46, 260);
+          let targetProgress = Math.min(window.scrollY / scrollRange, 1);
+          let currentProgress = targetProgress;
+
+          const applyScrollMotion = (progress: number) => {
+            gsap.set(backgroundLayer, {
+              scale: 1 + progress * (reduceMotion ? 0.05 : 0.18),
+              y: progress * (reduceMotion ? 10 : 46),
+              force3D: true,
+            });
+            gsap.set(heroImage, {
+              xPercent: -50,
+              scale: 1 + progress * (reduceMotion ? 0.06 : 0.32),
+              y: progress * (reduceMotion ? 14 : 92),
+              rotationY: -progress * (reduceMotion ? 0.9 : 4.3),
+              rotationX: progress * (reduceMotion ? 0.38 : 1.95),
+              force3D: true,
+            });
+            gsap.set(overlay, { opacity: 1 - progress * (reduceMotion ? 0.05 : 0.28) });
+          };
+
+          const tickScrollMotion = () => {
+            scrollFrameId = null;
+            if (!introFinished) return;
+            currentProgress += (targetProgress - currentProgress) * scrollLerp;
+            if (Math.abs(targetProgress - currentProgress) < 0.0012) {
+              currentProgress = targetProgress;
+            }
+            applyScrollMotion(currentProgress);
+            if (currentProgress !== targetProgress) {
+              scrollFrameId = window.requestAnimationFrame(tickScrollMotion);
+            }
+          };
+
+          const queueScrollMotion = () => {
+            targetProgress = Math.min(window.scrollY / scrollRange, 1);
+            if (scrollFrameId !== null) return;
+            scrollFrameId = window.requestAnimationFrame(tickScrollMotion);
+          };
+
+          applyScrollMotion(currentProgress);
+          window.addEventListener("scroll", queueScrollMotion, { passive: true });
+          window.addEventListener("resize", queueScrollMotion);
+        }
       },
     });
 
@@ -241,7 +248,7 @@ export default function Hero() {
         {
           scale: 1,
           y: 0,
-          duration: reduceMotion ? 0.92 : 2.05,
+          duration: reduceMotion || isMobile ? 0.72 : 2.05,
           ease: "expo.out",
         },
         0,
@@ -255,7 +262,7 @@ export default function Hero() {
           rotationX: 0,
           rotationY: 0,
           filter: "brightness(1) saturate(1)",
-          duration: reduceMotion ? 0.9 : 1.95,
+          duration: reduceMotion || isMobile ? 0.68 : 1.95,
           ease: "expo.out",
         },
         0,
@@ -264,16 +271,14 @@ export default function Hero() {
         overlay,
         {
           opacity: 1,
-          duration: reduceMotion ? 0.85 : 1.8,
+          duration: reduceMotion || isMobile ? 0.6 : 1.8,
           ease: "power2.out",
         },
         0.06,
       );
 
     const playIntro = () => {
-      if (introPlayed) {
-        return;
-      }
+      if (introPlayed) return;
       introPlayed = true;
       introTimeline.play(0);
     };
@@ -284,8 +289,6 @@ export default function Hero() {
     };
 
     window.addEventListener("initial-loader:complete", onLoaderComplete);
-    window.addEventListener("scroll", queueScrollMotion, { passive: true });
-    window.addEventListener("resize", queueScrollMotion);
 
     if (!loaderElement) {
       startFrameId = window.requestAnimationFrame(playIntro);
@@ -294,18 +297,12 @@ export default function Hero() {
     fallbackId = window.setTimeout(playIntro, 4500);
 
     return () => {
-      if (scrollFrameId !== null) {
-        window.cancelAnimationFrame(scrollFrameId);
-      }
-      if (startFrameId !== null) {
-        window.cancelAnimationFrame(startFrameId);
-      }
-      if (fallbackId !== null) {
-        window.clearTimeout(fallbackId);
-      }
+      if (scrollFrameId !== null) window.cancelAnimationFrame(scrollFrameId);
+      if (startFrameId !== null) window.cancelAnimationFrame(startFrameId);
+      if (fallbackId !== null) window.clearTimeout(fallbackId);
       window.removeEventListener("initial-loader:complete", onLoaderComplete);
-      window.removeEventListener("scroll", queueScrollMotion);
-      window.removeEventListener("resize", queueScrollMotion);
+      // Cleanup scroll listeners added in onComplete (desktop only)
+      // They reference queueScrollMotion which is now in closure — use passive approach
       introTimeline.kill();
       context.revert();
     };

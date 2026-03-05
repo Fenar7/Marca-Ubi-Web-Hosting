@@ -89,6 +89,16 @@ export default function HowWeWork() {
       return;
     }
 
+    // On mobile: skip scrub/blur animations — content appears immediately
+    const isMobile =
+      window.matchMedia("(max-width: 900px)").matches ||
+      window.matchMedia("(hover: none)").matches;
+
+    if (isMobile) {
+      setFinalValues();
+      return;
+    }
+
     const context = gsap.context(() => {
       gsap.set(tagIcon, {
         autoAlpha: 0,
@@ -349,6 +359,16 @@ export default function HowWeWork() {
     };
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setFinalValues();
+      return;
+    }
+
+    // On mobile: skip all card scrub/blur/3D animations
+    const isMobile =
+      window.matchMedia("(max-width: 900px)").matches ||
+      window.matchMedia("(hover: none)").matches;
+
+    if (isMobile) {
       setFinalValues();
       return;
     }
