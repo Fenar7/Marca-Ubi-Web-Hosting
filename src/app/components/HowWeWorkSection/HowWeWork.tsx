@@ -91,8 +91,7 @@ export default function HowWeWork() {
 
     // On mobile: skip scrub/blur animations — content appears immediately
     const isMobile =
-      window.matchMedia("(max-width: 900px)").matches ||
-      window.matchMedia("(hover: none)").matches;
+      window.matchMedia("(max-width: 600px)").matches;
 
     if (isMobile) {
       setFinalValues();
@@ -365,8 +364,7 @@ export default function HowWeWork() {
 
     // On mobile: skip all card scrub/blur/3D animations
     const isMobile =
-      window.matchMedia("(max-width: 900px)").matches ||
-      window.matchMedia("(hover: none)").matches;
+      window.matchMedia("(max-width: 600px)").matches;
 
     if (isMobile) {
       setFinalValues();

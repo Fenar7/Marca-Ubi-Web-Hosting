@@ -164,8 +164,7 @@ export default function AboutSection() {
     // On mobile: skip all scrub/blur-heavy GSAP animations entirely.
     // Content is immediately visible — no compositor overhead.
     const isMobile =
-      window.matchMedia("(max-width: 900px)").matches ||
-      window.matchMedia("(hover: none)").matches;
+      window.matchMedia("(max-width: 600px)").matches;
 
     if (isMobile) {
       setFinalValues();
@@ -621,8 +620,7 @@ export default function AboutSection() {
 
     // On mobile: title must be immediately fully visible (no scrub)
     const isMobile =
-      window.matchMedia("(max-width: 900px)").matches ||
-      window.matchMedia("(hover: none)").matches;
+      window.matchMedia("(max-width: 600px)").matches;
 
     if (isMobile) {
       gsap.set(titleLineRefs.current, { "--line-fill": "100%" });

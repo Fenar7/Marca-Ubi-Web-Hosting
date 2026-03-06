@@ -29,8 +29,7 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
     // - Keep GSAP + ScrollTrigger driven by native scroll events
     // - Reduce ticker to 60fps (enough for 60Hz mobile screens)
     const isMobile =
-      window.matchMedia("(max-width: 900px)").matches ||
-      window.matchMedia("(hover: none)").matches;
+      window.matchMedia("(max-width: 600px)").matches;
 
     if (isMobile) {
       gsap.ticker.fps(60);

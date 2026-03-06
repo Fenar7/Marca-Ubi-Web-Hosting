@@ -41,8 +41,7 @@ export default function Hero() {
     }
 
     const isMobile =
-      window.matchMedia("(max-width: 900px)").matches ||
-      window.matchMedia("(hover: none)").matches;
+      window.matchMedia("(max-width: 600px)").matches;
 
     let hasPlayed = false;
     let frameId: number | null = null;
@@ -158,8 +157,7 @@ export default function Hero() {
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const isMobile =
-      window.matchMedia("(max-width: 900px)").matches ||
-      window.matchMedia("(hover: none)").matches;
+      window.matchMedia("(max-width: 600px)").matches;
 
     const loaderElement = document.querySelector<HTMLElement>("[data-initial-loader]");
 

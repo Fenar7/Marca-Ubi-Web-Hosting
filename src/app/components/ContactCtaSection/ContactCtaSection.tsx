@@ -34,8 +34,7 @@ const ContactCtaSection = () => {
       const contactInfo = contactInfoRef.current;
 
       const isMobile =
-        window.matchMedia("(max-width: 900px)").matches ||
-        window.matchMedia("(hover: none)").matches;
+        window.matchMedia("(max-width: 600px)").matches;
 
       // ─── Image: zoomed in → fits perfectly (like Hero parallax) ───────────
       // Skip on mobile — scrub + scale is expensive on touch devices
